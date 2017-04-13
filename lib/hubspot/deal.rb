@@ -38,16 +38,15 @@ module Hubspot
         new(response)
       end
 
-       # Associate a deal with a contact or company
-       # {http://developers.hubspot.com/docs/methods/deals/associate_deal}
-       # Usage
-       # Hubspot::Deal.associate!(45146940, [], [52])
-       def associate!(deal_id, company_ids=[], vids=[])
-         objecttype = company_ids.any? ? 'COMPANY' : 'CONTACT'
-         object_ids = (company_ids.any? ? company_ids : vids).join('&id=')
-         Hubspot::Connection.put_json(ASSOCIATE_DEAL_PATH, params: { deal_id: deal_id, OBJECTTYPE: objecttype, objectId: object_ids}, body: {})
-       end
- 
+      # Associate a deal with a contact or company
+      # {http://developers.hubspot.com/docs/methods/deals/associate_deal}
+      # Usage
+      # Hubspot::Deal.associate!(45146940, [], [52])
+      def associate!(deal_id, company_ids=[], vids=[])
+        objecttype = company_ids.any? ? 'COMPANY' : 'CONTACT'
+        object_ids = (company_ids.any? ? company_ids : vids).join('&id=')
+        Hubspot::Connection.put_json(ASSOCIATE_DEAL_PATH, params: { deal_id: deal_id, OBJECTTYPE: objecttype, objectId: object_ids}, body: {})
+      end
 
       def find(deal_id)
         response = Hubspot::Connection.get_json(DEAL_PATH, { deal_id: deal_id })
@@ -62,7 +61,7 @@ module Hubspot
         response = Hubspot::Connection.get_json(RECENT_UPDATED_PATH, opts)
         response['results'].map { |d| new(d) }
       end
-      
+
       # Find all deals associated to a company
       # {http://developers.hubspot.com/docs/methods/deals/get-associated-deals}
       # @param company [Hubspot::Company] the company
@@ -74,6 +73,16 @@ module Hubspot
         response["results"].map { |deal_id| find(deal_id) }
       end
 
+      # Find all deals associated to a contact
+      # {http://developers.hubspot.com/docs/methods/deals/get-associated-deals}
+      # @param contact [Hubspot::Contact] the contact
+      # @return [Array] Array of Hubspot::Deal records
+      def find_by_contact(contact)
+        path = ASSOCIATED_DEAL_PATH
+        params = { objectType: :contact, objectId: contact.vid }
+        response = Hubspot::Connection.get_json(path, params)
+        response["results"].map { |deal_id| find(deal_id) }
+      end
     end
 
     # Archives the contact in hubspot
